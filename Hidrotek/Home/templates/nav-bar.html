@@ -1,0 +1,39 @@
+{% load static %}
+<nav class="shadow-lg bg-white p-4">
+    <div class="container mx-auto flex justify-between items-center">
+        <div class="flex items-center">
+            <img src="{% static 'images/Logo1.jpg' %}" alt="Logo de la empresa" class="h-20 w-200 mr-2 ml-20">
+        </div>
+        <div class="hidden md:flex items-center space-x-4 ">
+            <a href="{% url 'home' %}" class="hover:text-blue-600">Inicio</a>
+            <a href="{% url 'products' %}" class="hover:text-blue-600">Productos</a>
+            <a href="{% url 'services' %}" class="hover:text-blue-600">Servicios</a>
+            <a href="#" class="hover:text-blue-600">Cotizaciones</a>
+            <a href="#" class="hover:text-blue-600">Contacto</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:text-black-600">Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="bg-blue-600 text-white px-4 py-2 rounded mr-2 hover:text-black-600">Login</a>
+            {% endif %}
+           
+            <a href="#" class="hover:text-blue-600"><i class="fas fa-shopping-cart fa-2x mr-20"></i></a>
+        </div>
+        <div class="md:hidden flex items-center space-x-4">
+            <a href="#" class="hover:text-blue-600"><i class="fas fa-shopping-cart fa-2x"></i></a>
+            <button id="menu-button" class="focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div id="menu" class="hidden md:hidden">
+        <a href="{% url 'home' %}" class="block px-4 py-2 hover:bg-gray-200">Inicio</a>
+        <a href="{% url 'products' %}" class="block px-4 py-2 hover:bg-gray-200">Productos</a>
+        <a href="{% url 'services' %}" class="block px-4 py-2 hover:bg-gray-200">Servicios</a>
+        <a href="#" class="block px-4 py-2 hover:bg-gray-200">Cotizaciones</a>
+        <a href="#" class="block px-4 py-2 hover:bg-gray-200">Contacto</a>
+        <a href="#" class="block px-4 py-2 bg-blue-600 text-white rounded my-2 mx-4">Registro</a>
+        <a href="#" class="block px-4 py-2 bg-blue-600 text-white rounded my-2 mx-4">Login</a>
+    </div>
+</nav>
