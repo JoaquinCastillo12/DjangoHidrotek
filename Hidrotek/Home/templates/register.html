@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content%}
+<br><br>
+    <div class="w-full max-w-md p-6 mx-auto bg-white rounded-md shadow-md">
+        <h1 class="text-3xl font-semibold text-center text-gray-700">Register</h1>
+
+        <form class="mt-6" method="POST" action="{% url 'register' %}">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+            
+            <div class="mt-6">
+                <button class="w-full px-4 py-2 tracking-wide text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:bg-blue-700">
+                    Register
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% endblock%}

@@ -1,10 +1,10 @@
 {% load static %}
-<nav class="shadow-lg bg-white p-4">
-    <div class="container mx-auto flex justify-between items-center">
+<nav class="shadow-lg bg-white pl-20 pt-4 pb-4 pr-20">
+    <div class="container mx-auto flex justify-between items-center px-4">
         <div class="flex items-center">
-            <img src="{% static 'images/Logo1.jpg' %}" alt="Logo de la empresa" class="h-20 w-200 mr-2 ml-20">
+            <img src="{% static 'images/Logo1.jpg' %}" alt="Logo de la empresa" class="h-20 w-auto mr-2">
         </div>
-        <div class="hidden md:flex items-center space-x-4 ">
+        <div class="hidden lg:flex items-center space-x-4">
             <a href="{% url 'home' %}" class="hover:text-blue-600">Inicio</a>
             <a href="{% url 'products' %}" class="hover:text-blue-600">Productos</a>
             <a href="{% url 'services' %}" class="hover:text-blue-600">Servicios</a>
@@ -13,12 +13,12 @@
             {% if user.is_authenticated %}
             <a href="{% url 'logout' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:text-black-600">Logout</a>
             {% else %}
-            <a href="{% url 'login' %}" class="bg-blue-600 text-white px-4 py-2 rounded mr-2 hover:text-black-600">Login</a>
+            <a href="{% url 'login' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:text-black-600">Login</a>
+            <a href="{% url 'register' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:text-black-600">Register</a>
             {% endif %}
-           
-            <a href="#" class="hover:text-blue-600"><i class="fas fa-shopping-cart fa-2x mr-20"></i></a>
+            <a href="#" class="hover:text-blue-600"><i class="fas fa-shopping-cart fa-2x"></i></a>
         </div>
-        <div class="md:hidden flex items-center space-x-4">
+        <div class="lg:hidden flex items-center space-x-4">
             <a href="#" class="hover:text-blue-600"><i class="fas fa-shopping-cart fa-2x"></i></a>
             <button id="menu-button" class="focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -27,13 +27,17 @@
             </button>
         </div>
     </div>
-    <div id="menu" class="hidden md:hidden">
+    <div id="menu" class="hidden lg:hidden px-4">
         <a href="{% url 'home' %}" class="block px-4 py-2 hover:bg-gray-200">Inicio</a>
         <a href="{% url 'products' %}" class="block px-4 py-2 hover:bg-gray-200">Productos</a>
         <a href="{% url 'services' %}" class="block px-4 py-2 hover:bg-gray-200">Servicios</a>
         <a href="#" class="block px-4 py-2 hover:bg-gray-200">Cotizaciones</a>
         <a href="#" class="block px-4 py-2 hover:bg-gray-200">Contacto</a>
-        <a href="#" class="block px-4 py-2 bg-blue-600 text-white rounded my-2 mx-4">Registro</a>
-        <a href="#" class="block px-4 py-2 bg-blue-600 text-white rounded my-2 mx-4">Login</a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="block px-4 py-2 bg-blue-600 text-white rounded my-2 mx-4">Logout</a>
+        {% else %}
+        <a href="{% url 'login' %}" class="block px-4 py-2 bg-blue-600 text-white rounded my-2 mx-4">Login</a>
+        <a href="{% url 'register' %}" class="block px-4 py-2 bg-blue-600 text-white rounded my-2 mx-4">Register</a>
+        {% endif %}
     </div>
 </nav>
