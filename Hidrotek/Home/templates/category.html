@@ -46,7 +46,7 @@
                 <img src="{{ item.image.url }}" alt="{{ item.name }}" class="h-40 w-full object-cover mb-4 rounded">
                 <h3 class="text-lg font-bold mb-2">{{ item.name }}</h3>
                 <p class="text-xl font-semibold mb-2">${{ item.price }}</p>
-                <a href="#" class="block text-center bg-blue-600 text-white py-2 rounded mt-auto">Añadir al Carrito</a>
+                <a href="{% url 'add_to_cart' item.id %}" class="block text-center bg-blue-600 text-white py-2 rounded mt-auto">Añadir al Carrito</a>
             </div>
             {% endfor %}
         </div>
