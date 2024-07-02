@@ -6,10 +6,13 @@
         <div class="container mx-auto text-center px-4">
             <h1 class="text-4xl font-bold mb-4">Bienvenido a Bombas de Agua S.A.</h1>
             <p class="text-xl mb-8">La mejor solución en sistemas de bombeo de agua</p>
-            <a href="#" class="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-gray-200">Hacer una Cotización</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'products' %}" class="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-gray-200">Hacer una Cotización</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-gray-200">Hacer una Cotización</a>
+            {% endif %}
         </div>
     </section>
-
     <section class="mx-20 py-20">
         <div class="container mx-auto text-center px-4">
             <h2 class="text-3xl font-bold mb-12">Nuestros Servicios</h2>

@@ -1,54 +1,51 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block content %}
-
-
-<!-- Contenido del Carrito -->
-
 <div class="container mx-auto mt-8">
-    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-        <div class="px-6 py-4">
-            <h2 class="text-2xl font-bold mb-4">Tu Carrito de Compras</h2>
-            
-            <!-- Lista de ítems del carrito -->
-            <ul>
-                {% for item in cart.cartitem_set.all %}
-                <li class="flex justify-between items-center border-b py-2">
-                    <div class="flex items-center space-x-4">
-                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="h-20 w-20 object-cover">
-                        <div>
-                            <h3 class="font-bold">{{ item.product.name }}</h3>
-                            <p class="text-gray-600">Precio unitario: ${{ item.product.price }}</p>
-                        </div>
-                    </div>
-                    <div>
-                        <form action="{% url 'adjust_cart' item.id %}" method="post">
-                            {% csrf_token %}
-                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" required>
-                            <button type="submit">Actualizar</button>
-                        </form>
-                        <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 hover:text-red-700 focus:outline-none">Eliminar</a>
-                    </div>
-                </li>
-                {% empty %}
-                <li class="py-4 text-center text-gray-500">Tu carrito está vacío.</li>
-                {% endfor %}
-            </ul>
-            
-            <!-- Total del carrito -->
-            <div class="mt-8 text-right">
-                <p id="cart-total" class="text-lg font-semibold">Total: ${{ cart.total }}</p>
-            </div>
-        </div>
-        
-        <!-- Botón para continuar comprando -->
-        <div class="px-6 py-4 bg-gray-100 border-t">
-            <a href="{% url 'products' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:text-black-600">Seguir Comprando</a>
-        </div>
+  <div class="shopping-cart bg-white shadow-lg rounded-lg overflow-hidden">
+    <div class="cart-header px-6 py-4 flex justify-between items-center text-gray-800">
+      <h2 class="text-2xl font-bold">Tu Carrito de Compras</h2>
+      <a href="{% url 'products' %}" class="text-blue-600 hover:text-blue-700 focus:outline-none">Seguir Comprando</a>
     </div>
+    <ul class="cart-items px-6 py-4 divide-y divide-gray-200">
+      {% for item in cart.cartitem_set.all %}
+      <li class="cart-item flex justify-between items-center py-4 hover:bg-gray-100">
+        <div class="item-details flex items-center space-x-4">
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="h-20 w-20 object-cover rounded-lg">
+          <div class="item-info">
+            <h3 class="font-bold text-gray-800">{{ item.product.name }}</h3>
+            <p class="text-gray-600">Precio unitario: ${{ item.product.price }}</p>
+          </div>
+        </div>
+        <div class="item-actions flex items-center">
+          <form action="{% url 'adjust_cart' item.id %}" method="post" class="quantity-form flex items-center">
+            {% csrf_token %}
+            <div class="quantity-input flex items-center mr-4">
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="1" required class="quantity-field text-center w-12 border border-gray-300 rounded-md">
+              <p class="ml-2 text-gray-800">Subtotal: ${{ item.subtotal }}</p>
+            </div>
+            <button type="submit" class="update-button text-blue-600 hover:text-blue-800">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </form>
+          <a href="{% url 'remove_from_cart' item.product.id %}" class="remove-link text-red-600 hover:text-red-800 ml-4">
+            <i class="fas fa-trash-alt"></i>
+          </a>
+        </div>
+      </li>
+      {% empty %}
+      <li class="empty-cart py-4 text-center text-gray-500">Tu carrito está vacío.</li>
+      {% endfor %}
+    </ul>
+    <div class="cart-total mt-8 px-6 py-4 flex justify-between items-center text-gray-800 border-t border-gray-200">
+      <p class="total-label text-lg font-semibold">Total:</p>
+      <p id="cart-total" class="total-amount text-lg font-semibold">${{ cart.total }}</p>
+    </div>
+    <div class="px-6 py-4 bg-gray-100 border-t">
+      <a href="{% url 'procesar_formulario' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Cotizar</a>
+    </div>
+  </div>
 </div>
-
 
 {% endblock %}
 

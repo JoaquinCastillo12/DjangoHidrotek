@@ -1,18 +1,22 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Category
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
 from .forms import SignUpForm
-from django import forms
-from django.http import JsonResponse
-
-from django.shortcuts import render, get_object_or_404, redirect
+from io import BytesIO
 from django.contrib.auth.decorators import login_required
 from Home.models import Product
-from .models import Cart, CartItem
+from django.http import HttpResponse
+from django.template.loader import get_template
+from .models import Product, Category, Cart, CartItem
+import os
+import tempfile
+from xhtml2pdf import pisa
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
+from django.http import HttpResponseRedirect
 
 @login_required
 def add_to_cart(request, product_id):
@@ -22,12 +26,28 @@ def add_to_cart(request, product_id):
     if not created:
         cart_item.quantity += 1
     cart_item.save()
-    return redirect('products')
+    
+    # Redirect to the same page
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 @login_required
 def view_cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
-    return render(request, 'cart.html', {'cart': cart})
+    cart_items = CartItem.objects.filter(cart=cart)
+
+    total_quantity = sum(item.quantity for item in cart_items)
+    total_price = sum(item.subtotal for item in cart_items)
+    cart_item_count = cart_items.count()
+
+    context = {
+        'cart': cart,
+        'cart_items': cart_items,
+        'total_quantity': total_quantity,
+        'total_price': total_price,
+        'cart_item_count': cart_item_count,
+    }
+
+    return render(request, 'cart.html', context)
 
 @login_required
 def remove_from_cart(request, product_id):
@@ -39,16 +59,16 @@ def remove_from_cart(request, product_id):
 
 @login_required
 def adjust_cart(request, item_id):
-    cart = Cart.objects.get(user=request.user)  # Obtén el carrito del usuario actual, ajusta esto según tu implementación
+    cart = Cart.objects.get(user=request.user) 
     item = get_object_or_404(CartItem, id=item_id, cart=cart)
 
     if request.method == 'POST':
-        new_quantity = int(request.POST.get('quantity', 1))  # Obtén la nueva cantidad desde el formulario
+        new_quantity = int(request.POST.get('quantity', 1))  
         if new_quantity > 0:
             item.quantity = new_quantity
             item.save()
 
-    return redirect('view_cart')  # Redirige de vuelta al carrito o a donde sea necesario
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER')) 
 def home(request):
     return render(request, 'home.html', {})
 
@@ -75,7 +95,7 @@ def products(request, category_name=None):
     else:
         items = items.order_by('name')
 
-    paginator = Paginator(items, 12)  # 12 items per page
+    paginator = Paginator(items, 12) 
     page_number = request.GET.get('page')
     items = paginator.get_page(page_number)
 
@@ -90,6 +110,9 @@ def products(request, category_name=None):
 
 def services(request):
     return render(request, 'services.html', {})
+
+def contact(request):
+    return render(request, 'contact.html', {})
 
 def category(request, foo):
     foo = foo.replace('-', ' ')
@@ -112,7 +135,7 @@ def category(request, foo):
         else:
             items = items.order_by('name')
 
-        paginator = Paginator(items, 12)  # 12 items per page
+        paginator = Paginator(items, 12)  
         page_number = request.GET.get('page')
         items = paginator.get_page(page_number)
 
@@ -144,8 +167,6 @@ def login_user(request):
     else:
         return render(request, 'login.html', {})
 
-
-
 def logout_user(request):
     logout(request)
     messages.success(request, ("You have been logout"))
@@ -168,3 +189,103 @@ def register_user(request):
             return redirect('register')
     else:
         return render(request, 'register.html', {'form':form})
+
+
+
+@login_required
+def procesar_formulario(request):
+   
+    try:
+        user_cart = Cart.objects.get(user=request.user)
+    except Cart.DoesNotExist:
+        return HttpResponse('No se encontró el carrito del usuario.')
+
+    cart_items = user_cart.cartitem_set.all()
+    
+   
+    total = user_cart.total
+    for item in cart_items:
+        item.subtotal = item.quantity * item.product.price
+    
+    nombre_cliente = request.user.get_full_name()
+    email_cliente = request.user.email
+    fecha_validez = '30 días'  
+
+    pdf_content = generar_pdf(nombre_cliente, email_cliente, fecha_validez,total,cart_items)
+        
+    if pdf_content:
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_pdf:
+                temp_pdf.write(pdf_content)
+                temp_pdf_path = temp_pdf.name
+
+            if enviar_email(email_cliente, temp_pdf_path):
+
+                os.unlink(temp_pdf_path)
+                messages.success(request, ("La cotizacion ha sido enviada a su correo con exito"))
+                return redirect ('home')
+            else:
+                messages.success(request, ("Hubo un error con el envio de se cotizacion, intente nuevamente"))
+                return redirect ('home')
+    else:
+            return HttpResponse('Error al generar el PDF')
+
+def generar_pdf(nombre_cliente, email_cliente, fecha_validez,total,cart_items):
+
+    template_path = 'cotizacion.html'
+
+    template = get_template(template_path)
+
+    context = {
+        'items': cart_items,
+        'total': total,
+        'nombre_cliente': nombre_cliente,
+        'email_cliente': email_cliente,
+        'fecha_validez': fecha_validez,
+    }
+
+    html = template.render(context)
+
+    pdf_file = BytesIO()
+    pisa_status = pisa.CreatePDF(html.encode('UTF-8'), dest=pdf_file)
+
+    if not pisa_status.err:
+        pdf_file.seek(0)
+        return pdf_file.read()
+    else:
+        return None
+
+def enviar_email(destinatario, archivo_adjunto):
+    
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587  
+    smtp_user = 'joaquin.castilloh12@gmail.com' 
+    smtp_password = 'nvse itqb miil tasu' 
+
+    subject = 'Cotización adjunta'
+    body = 'Adjunto encontrarás la cotización solicitada.'
+    sender_email = smtp_user
+    receiver_email = destinatario
+
+    message = MIMEMultipart()
+    message['From'] = sender_email
+    message['To'] = receiver_email
+    message['Subject'] = subject
+
+    with open(archivo_adjunto, 'rb') as file:
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(file.read())
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', f'attachment; filename= {os.path.basename(archivo_adjunto)}')
+        message.attach(part)
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(message)
+        return True
+    except Exception as e:
+        print("Error al enviar el correo electrónico:", str(e))
+        return False
+

@@ -2,8 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container mx-auto px-4 md:px-10 flex flex-col md:flex-row mt-10"> <!-- Añadidas clases para controlar el ancho del contenedor -->
-    <!-- Sidebar -->
+<div class="container mx-auto px-4 md:px-10 flex flex-col md:flex-row mt-10">
     <aside class="w-full md:w-1/4 bg-white p-4 rounded shadow-md mb-4 md:mb-0">
         <h2 class="text-xl font-bold mb-4">Buscar Producto</h2>
         <div class="mb-6">
@@ -25,7 +24,6 @@
             </ul>
         </div>
     </aside>
-    <!-- Product Catalog -->
     <main class="w-full md:w-3/4 mx-0 md:mx-4">
         <h1 class="text-3xl font-bold mb-6 text-center">Catálogo de Productos</h1>
         <div class="flex justify-between items-center mb-6">
@@ -47,11 +45,10 @@
                 <img src="{{ item.image.url }}" alt="{{ item.name }}" class="h-40 w-full object-cover mb-4 rounded">
                 <h3 class="text-lg font-bold mb-2">{{ item.name }}</h3>
                 <p class="text-xl font-semibold mb-2">${{ item.price }}</p>
-                <a href="{% url 'add_to_cart' item.id %}" class="block text-center bg-blue-600 text-white py-2 rounded mt-auto">Añadir al Carrito</a>
+                <a href="{% url 'add_to_cart' item.id %}" class="block text-center bg-blue-600 text-white py-2 rounded mt-auto add-to-cart-btn hover:bg-green-600">Añadir al Carrito</a>
             </div>
             {% endfor %}
         </div>
-
         <div class="mt-6">
             <div class="flex justify-center">
                 <nav>
@@ -89,4 +86,29 @@
         </div>
     </main>
 </div>
+
+<style>
+    .add-to-cart-btn {
+        transition: background-color 0.3s ease;
+    }
+
+    .add-to-cart-btn.clicked {
+        background-color: #4CAF50; /* Green color */
+    }
+</style>
+
+<script>
+    // Script para añadir una clase cuando se hace clic en "Añadir al Carrito"
+    const addToCartBtns = document.querySelectorAll('.add-to-cart-btn');
+
+    addToCartBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.add('clicked');
+            setTimeout(() => {
+                this.classList.remove('clicked');
+            }, 1000); // Duración de la animación en milisegundos
+        });
+    });
+</script>
+
 {% endblock %}
